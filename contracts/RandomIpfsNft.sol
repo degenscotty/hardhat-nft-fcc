@@ -38,16 +38,16 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
     uint256 internal immutable i_mintFee;
 
     // Events
-    event NftRequested(uint256 indexed requestId, address requester);
-    event NftMinter(Breed dogBreed, address minter);
+    event NftRequested(uint256 indexed requestId, address indexed requester);
+    event NftMinted(uint256 indexed tokenId, Breed indexed dogBreed, address indexed minter);
 
     constructor(
         address vrfCoordinatorV2,
         uint64 subscriptionId,
         bytes32 gasLane,
+        uint256 mintFee,
         uint32 callbackGasLimit,
-        string[3] memory dogTokenUris,
-        uint256 mintFee
+        string[3] memory dogTokenUris
     ) VRFConsumerBaseV2(vrfCoordinatorV2) ERC721("Random IPFS NFT", "RIN") {
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
         i_subcriptionId = subscriptionId;
@@ -81,7 +81,10 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
         Breed dogBreed = getBreedFromModdedRng(moddedRng);
         _safeMint(dogOwner, newTokenId);
         _setTokenURI(newTokenId, s_dogTokenUris[uint256(dogBreed)]);
-        emit NftMinter(dogBreed, dogOwner);
+
+        emit NftMinted(newTokenId, dogBreed, dogOwner);
+
+        s_tokenCounter = s_tokenCounter + 1;
     }
 
     function withdraw() public onlyOwner {
@@ -93,13 +96,13 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
     }
 
     function getBreedFromModdedRng(uint256 moddedRng) public pure returns (Breed) {
-        uint256 cumulativeSum = 0;
+        uint256 currentPos = 0;
         uint256[3] memory chanceArray = getChanceArray();
         for (uint256 i = 0; i < chanceArray.length; i++) {
-            if (moddedRng >= cumulativeSum && moddedRng < cumulativeSum + chanceArray[i]) {
+            if (moddedRng >= currentPos && moddedRng < chanceArray[i]) {
                 return Breed(i);
             }
-            cumulativeSum += chanceArray[i];
+            currentPos = chanceArray[i];
         }
         revert RandomIpfsNft__RangeOutOfBounds();
     }

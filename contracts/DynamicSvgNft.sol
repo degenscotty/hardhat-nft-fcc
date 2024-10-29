@@ -36,8 +36,10 @@ contract DynamicSvgNft is ERC721, Ownable {
     function mintNft(int256 highValue) public {
         s_tokenIdToHighValue[s_tokenCounter] = highValue;
         _safeMint(msg.sender, s_tokenCounter);
-        s_tokenCounter = s_tokenCounter + 1;
+
         emit CreatedNFT(s_tokenCounter, highValue);
+
+        s_tokenCounter = s_tokenCounter + 1;
     }
 
     // You could also just upload the raw SVG and let solildity convert it!
