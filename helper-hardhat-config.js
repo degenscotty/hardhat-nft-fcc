@@ -15,15 +15,21 @@ const networkConfig = {
             "82552481492719641598106587877252959688609853062389465704760740256481593202832",
         callbackGasLimit: "500000",
         mintFee: ethers.utils.parseEther("0.01"),
+        ethUsdpriceFeedAddress: "0xF0d50568e3A7e8259E16663972b11910F89BD8e7",
     },
     31337: {
         name: "hardhat",
     },
 }
 
+const DECIMALS = "8"
+const INITIAL_PRICE = "200000000000"
+
 const developmentChains = ["hardhat", "localhost"]
 
 module.exports = {
     networkConfig,
     developmentChains,
+    DECIMALS,
+    INITIAL_PRICE,
 }

@@ -17,6 +17,8 @@ contract DynamicSvgNft is ERC721, Ownable {
     uint256 private s_tokenCounter;
     string private s_lowImageURI;
     string private s_highImageURI;
+    AggregatorV3Interface internal immutable i_priceFeed;
+    mapping(uint256 => int256) public s_tokenIdToHighValue;
 
     event CreatedNFT(uint256 indexed tokenId, int256 highValue);
 
@@ -26,11 +28,16 @@ contract DynamicSvgNft is ERC721, Ownable {
         string memory highSvg
     ) ERC721("Dynamic SVG NFT", "DSN") {
         s_tokenCounter = 0;
+        s_lowImageURI = svgToImageURI(lowSvg);
+        s_highImageURI = svgToImageURI(highSvg);
+        i_priceFeed = AggregatorV3Interface(priceFeedAddress);
     }
 
     function mintNft(int256 highValue) public {
+        s_tokenIdToHighValue[s_tokenCounter] = highValue;
         _safeMint(msg.sender, s_tokenCounter);
         s_tokenCounter = s_tokenCounter + 1;
+        emit CreatedNFT(s_tokenCounter, highValue);
     }
 
     // You could also just upload the raw SVG and let solildity convert it!
@@ -43,14 +50,37 @@ contract DynamicSvgNft is ERC721, Ownable {
         return string(abi.encodePacked(baseURL, svgBase64Encoded));
     }
 
+    function _baseURI() internal pure override returns (string memory) {
+        return "data:application/json;base64,";
+    }
+
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), "URI for nonexistent token!");
 
-        return "";
-    }
+        (, int256 price, , , ) = i_priceFeed.latestRoundData();
+        string memory imageURI = s_lowImageURI;
+        if (price >= s_tokenIdToHighValue[tokenId]) {
+            imageURI = s_highImageURI;
+        }
 
-    function _baseURI() internal pure override returns (string memory) {
-        return "data:application/json;base64,";
+        return
+            string(
+                abi.encodePacked(
+                    _baseURI(),
+                    Base64.encode(
+                        bytes(
+                            abi.encodePacked(
+                                '{"name":"',
+                                name(),
+                                '", "description":"An NFT that changes based on the ChainLink Feed", ',
+                                '"attributes":[{"trait_type": "coolness", "value": 100}], "image":"',
+                                imageURI,
+                                '"}'
+                            )
+                        )
+                    )
+                )
+            );
     }
 
     function getLowSVG() public view returns (string memory) {
@@ -63,5 +93,13 @@ contract DynamicSvgNft is ERC721, Ownable {
 
     function getTokenCounter() public view returns (uint256) {
         return s_tokenCounter;
+    }
+
+    function getPriceFeed() public view returns (AggregatorV3Interface) {
+        return i_priceFeed;
+    }
+
+    function getLatestEthPrice() public view returns (int256 price) {
+        (, price, , , ) = i_priceFeed.latestRoundData();
     }
 }
