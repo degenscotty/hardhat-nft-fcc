@@ -2,7 +2,7 @@
 
 ## Basic NFT
 
-Basic NFT with its URI pointing to IPFS
+Basic NFT with its URI pointing to IPFS.
 
 ## Random IPFS NFT
 
