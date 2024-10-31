@@ -22,7 +22,7 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
     }
 
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
-    uint64 private immutable i_subcriptionId;
+    uint256 private immutable i_subcriptionId;
     bytes32 private immutable i_gasLane;
     uint32 private immutable i_callbackGasLimit;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
@@ -43,7 +43,7 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
 
     constructor(
         address vrfCoordinatorV2,
-        uint64 subscriptionId,
+        uint256 subscriptionId,
         bytes32 gasLane,
         uint256 mintFee,
         uint32 callbackGasLimit,
@@ -63,7 +63,7 @@ contract RandomIpfsNft is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
         }
         requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane,
-            i_subcriptionId,
+            uint64(i_subcriptionId),
             REQUEST_CONFIRMATIONS,
             i_callbackGasLimit,
             NUM_WORDS
