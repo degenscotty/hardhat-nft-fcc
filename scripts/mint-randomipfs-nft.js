@@ -19,7 +19,7 @@ async function mintNft() {
 
     try {
         const tx = await randomIpfsNft.requestNft({
-            value: ethers.utils.parseEther("0.011"),
+            value: ethers.utils.parseEther("0.01"),
             gasLimit: 500000,
             maxPriorityFeePerGas: ethers.utils.parseUnits("25", "gwei"), // 25 Gwei
             maxFeePerGas: ethers.utils.parseUnits("50", "gwei"), // 50 Gwei
